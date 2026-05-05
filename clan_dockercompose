@@ -1,0 +1,54 @@
+(hello.c)
+C
+
+#include <stdio.h>
+
+int main() {
+    printf("Hello from C inside Docker!\n");
+    return 0;
+}
+
+
+Dockerfile
+
+This file tells Docker how to install a compiler (gcc) and build your code.
+Dockerfile
+
+# Use a lightweight GCC image
+FROM gcc:latest
+
+# Set the working directory
+WORKDIR /usr/src/myapp
+
+# Copy the source code into the container
+COPY hello.c .
+
+# Compile the C program
+RUN gcc -o myapp hello.c
+
+# Command to run the compiled binary
+CMD ["./myapp"]
+
+
+
+
+docker-compose.yml
+
+This file simplifies the build and run process.
+YAML
+
+version: '3.8'
+
+services:
+  c-app:
+    build: .
+    container_name: c_container
+
+
+
+docker-compose up --build
+
+docker-compose down
+
+
+

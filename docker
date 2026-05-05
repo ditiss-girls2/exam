@@ -1,0 +1,54 @@
+docker pull nginx
+docker run -d --name my_nginx nginx
+docker ps
+docker stop my_nginx
+docker rm my_nginx
+
+docker pull alpine
+docker images
+docker inspect alpine
+docker rmi alpine
+
+
+docker run -it --name my_ubuntu ubuntu /bin/bash
+# Once inside the container:
+ls
+pwd
+exit
+# Back on host machine:
+docker ps -a
+docker restart my_ubuntu
+
+
+docker run -d --name web_server nginx
+docker ps
+docker stop web_server
+docker rename web_server my_server
+docker rm my_server
+
+
+docker pull nginx
+docker tag nginx mynginx:v1
+docker tag nginx mynginx:latest
+docker images
+docker rmi mynginx:v1
+
+
+docker login
+# Replace <username> with your Docker Hub ID
+docker tag nginx <username>/mynginx:v1
+docker push <username>/mynginx:v1
+docker logout
+
+
+# Maps Host Port 8080 to Container Port 80
+docker run -d -p 8080:80 --name net_nginx nginx
+docker network ls
+docker network inspect bridge
+
+
+curl localhost:8080
+
+
+
+

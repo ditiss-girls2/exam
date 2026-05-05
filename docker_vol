@@ -1,0 +1,150 @@
+docker volume create data_vol
+docker run -it --name c1 -v data_vol:/data alpine sh
+# Inside container:
+touch /data/testfile.txt
+exit
+# Remove and start new:
+docker rm c1
+docker run -it --name c2 -v data_vol:/data alpine sh
+# Inside container:
+ls /data
+
+Dockerfile:
+Dockerfile
+
+FROM python:3.9-slim
+COPY app.py /app/app.py
+CMD ["python", "/app/app.py"]
+
+docker build -t my-python-app .
+docker run my-python-app
+###########################################################
+Main.java:
+Java
+
+public class Main { public static void main(String[] args) { System.out.println("Helllo from Java!"); } }
+
+Dockerfile
+
+FROM openjdk:11
+COPY Main.java .
+RUN javac Main.java
+CMD ["java", "Main"]
+
+docker build -t my-java-app .
+docker run my-java-app
+
+###########################################################
+docker volume create mysql_data
+docker run -d --name db -e MYSQL_ROOT_PASSWORD=root -v mysql_data:/var/lib/mysql mysql:latest
+# Access MySQL:
+docker exec -it db mysql -u root -p
+# Inside MySQL: CREATE DATABASE testdb; EXIT;
+docker restart db
+docker exec -it db mysql -u root -p -e "SHOW DATABASES;"
+
+FROM nginx:latest
+COPY index.html /usr/share/nginx/html/index.html
+
+docker build -t my-nginx .
+docker run -d -p 8081:80 my-nginx
+
+mkdir ~/host_data && echo "host file" > ~/host_data/file.txt
+docker run -it -v ~/host_data:/container_data alpine sh
+
+
+
+##############################################################
+
+FROM alpine:latest
+RUN apk add --no-cache bash
+COPY script.sh /script.sh
+RUN chmod +x /script.sh
+CMD ["/bin/bash", "/script.sh"]
+
+
+docker volume create shared_vol
+# Container A: Write data
+docker run -it --name container_a -v shared_vol:/app alpine sh
+# Inside A: echo "shared info" > /app/data.txt && exit
+# Container B: Read data
+docker run -it --name container_b -v shared_vol:/app alpine sh
+# Inside B: cat /app/data.txt
+
+#############################################################
+
+docker volume create shared_vol
+# Container A: Write data
+docker run -it --name container_a -v shared_vol:/app alpine sh
+# Inside A: echo "shared info" > /app/data.txt && exit
+# Container B: Read data
+docker run -it --name container_b -v shared_vol:/app alpine sh
+# Inside B: cat /app/data.txt
+
+
+################## Mysql exwcution ###########################
+
+Q3. Docker Compose: MySQL with Volume
+
+1. Create docker-compose.yml:
+YAML
+
+services:
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: my_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+
+2. Verification:
+Bash
+
+docker-compose up -d
+docker exec -it <container_id> mysql -u root -p
+# Inside MySQL: CREATE TABLE test (id INT);
+docker-compose restart
+docker exec -it <container_id> mysql -u root -p -e "USE my_db; SHOW TABLES;" 
+
+
+
+
+################### Three nginx  ##########################
+
+4. Three Nginx Containers Shared Volume
+
+Note: Because they share the same directory, the last container to write to index.html would usually overwrite the others. To show different content on different ports using one volume, we use command overrides.
+
+1. Create docker-compose.yml:
+YAML
+
+services:
+  nginx1:
+    image: nginx:latest
+    ports: ["8081:80"]
+    volumes: ["shared-data:/usr/share/nginx/html"]
+    command: /bin/sh -c "echo 'Hello from Container 1' > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"
+
+  nginx2:
+    image: nginx:latest
+    ports: ["8082:80"]
+    volumes: ["shared-data:/usr/share/nginx/html"]
+    command: /bin/sh -c "echo 'Hello from Container 2' > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"
+
+  nginx3:
+    image: nginx:latest
+    ports: ["8083:80"]
+    volumes: ["shared-data:/usr/share/nginx/html"]
+    command: /bin/sh -c "echo 'Hello from Container 3' > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"
+
+volumes:
+  shared-data:
+
+
+
+docker-compose up -d
+

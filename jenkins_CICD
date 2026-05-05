@@ -1,0 +1,117 @@
+1. Java Application & GitHub Setup
+
+File: HelloWorld.java
+Java
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello from Jenkins Pipeline!");
+    }
+}
+
+2. Dockerfile Setup
+
+File: Dockerfile
+Dockerfile
+
+FROM openjdk:11-slim
+COPY . /app
+WORKDIR /app
+RUN javac HelloWorld.java
+CMD ["java", "HelloWorld"]
+
+3. Kubernetes Manifests
+
+File: deployment.yaml
+YAML
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: java-app
+  template:
+    metadata:
+      labels:
+        app: java-app
+    spec:
+      containers:
+      - name: java-app
+        image: <your_dockerhub_username>/java-app:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-app-service
+spec:
+  selector:
+    app: java-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+
+########### Jenkins ####################
+
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "your_dockerhub_username/java-app"
+        DOCKER_TAG = "latest"
+    }
+
+    stages {
+        stage('Pull Code') {
+            steps {
+                git 'https://github.com/your_username/java-app-repo.git'
+            }
+        }
+
+        stage('Compile & Run Java') {
+            steps {
+                sh 'javac HelloWorld.java'
+                sh 'java HelloWorld'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh "echo $PASS | docker login -u $USER --password-stdin"
+                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh "kubectl apply -f deployment.yaml"
+                sh "kubectl rollout restart deployment/java-app-deployment"
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh "kubectl get pods"
+                sh "kubectl get svc"
+            }
+        }
+    }
+}
+
+
+
+

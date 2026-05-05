@@ -1,0 +1,103 @@
+. Networking Setup (VPC, Subnet, IGW)
+
+This is the foundation for all AWS infrastructure.
+
+    VPC: VPC Dashboard > Create VPC > VPC only > Name: my-vpc, CIDR: 10.0.0.0/16.
+
+    Subnet: Subnets > Create > Select my-vpc > Name: public-sn, CIDR: 10.0.1.0/24.
+
+    Internet Gateway: Internet Gateways > Create > my-igw.
+
+        Action: Select my-igw > Attach to VPC > Select my-vpc.
+
+    Routing: Route Tables > Select the table for my-vpc > Routes > Edit routes.
+
+        Add Route: Destination 0.0.0.0/0, Target: Internet Gateway (my-igw).
+
+    Association: Route Tables > Subnet associations > Edit > Select public-sn.
+
+2. EC2 Instance Launch (Inside VPC)
+
+    Step 1: EC2 Dashboard > Launch Instance.
+
+    Step 2: Choose Ubuntu and t3.micro.
+
+    Step 3: Under Network Settings > Edit:
+
+        VPC: my-vpc
+
+        Subnet: public-sn
+
+        Auto-assign Public IP: Enable.
+
+    Step 4: Security Group: Add SSH (22) from My IP and HTTP (80) from 0.0.0.0/0.
+
+    Step 5: Select/Create Key Pair and click Launch.
+
+3. S3 Storage Operations
+
+    Create Bucket: S3 > Create bucket > Name: unique-name-123 > Create.
+
+    Upload: Open bucket > Upload > Drag/Drop index.html.
+
+    Public Access (If required):
+
+        Permissions tab > Edit > Uncheck Block all public access > Save.
+
+        Select file > Actions > Make public via ACL.
+
+4. IAM Roles (EC2 to S3 Connection)
+
+This allows your server to talk to storage without using hardcoded passwords.
+
+    Create Role: IAM > Roles > Create role > AWS Service > EC2.
+
+    Permissions: Search and check AmazonS3FullAccess.
+
+    Name: EC2-S3-Role > Create.
+
+    Attach: EC2 Dashboard > Select Instance > Actions > Security > Modify IAM Role.
+
+    Test: In the EC2 terminal, run:
+    Bash
+
+    aws s3 ls
+
+5. Bastion Host (Jump Server) Logic
+
+To access a private instance that has no public IP:
+
+    Bastion: Launch in public-sn with Public IP enabled.
+
+    Private EC2: Launch in private-sn with Public IP disabled.
+
+    Security Group (Private): Edit Inbound rules > SSH (22) > Source: Select the Security Group ID of the Bastion.
+
+    Connect:
+
+Bash
+
+    # Copy key to Bastion
+    scp -i key.pem key.pem ubuntu@bastion-ip:~/.
+    # SSH into Bastion
+    ssh -i key.pem ubuntu@bastion-ip
+    # SSH from Bastion to Private
+    ssh -i key.pem ubuntu@private-ip
+    ```
+
+
+
+---
+
+### 6. IAM Users & Permissions
+*   **Create User:** `IAM` > `Users` > `Create user`.
+*   **Console Access:** Check **Provide user access to AWS Management Console**.
+*   **Policy:** 
+    *   For **User1**: Attach `AmazonS3FullAccess`.
+    *   For **User2**: Leave with **No permissions**.
+*   **Testing:** Open an incognito window, log in as each user, and attempt to view the S3 dashboard.
+
+### Lab Exam Quick Tips:
+*   **Cleanup:** Always delete your EC2 instances and NAT Gateways first, then Subnets, then the VPC.
+*   **Security Groups:** If you can't connect, check if your IP changed or if the Port (22) is open.
+*   **S3 Naming:** S3 bucket names must be globally unique across all AWS users.

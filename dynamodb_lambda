@@ -1,0 +1,133 @@
+Phase 1: Database Setup (DynamoDB)
+
+You must have a table ready before the Lambda can interact with it.
+
+    Go to DynamoDB Dashboard > Create table.
+
+    Table name: Students
+
+    Partition key: prn (Type: String).
+
+    Keep all other settings as default and click Create table.
+
+Phase 2: IAM Permissions (The Most Important Step)
+
+Lambda cannot talk to DynamoDB or S3 unless you give it permission.
+
+    Go to IAM > Roles > Create role.
+
+    Select AWS Service and Lambda.
+
+    Search and check these policies:
+
+        AmazonDynamoDBFullAccess
+
+        AmazonS3ReadOnlyAccess
+
+        AWSLambdaBasicExecutionRole (for CloudWatch logs).
+
+    Name it Lambda-Lab-Role and create.
+
+Phase 3: Lambda Functions (Line-by-Line)
+
+For each question, go to Lambda Dashboard > Create function > Author from scratch. Select Python 3.x and under Change default execution role, select the Lambda-Lab-Role you just created.
+Q1 & Q2: Basic Input/Output
+
+Logic: Use event.get() to pull data from the test event.
+Python
+
+def lambda_handler(event, context):
+    # Q1: Addition
+    num1 = event.get('num1', 0)
+    num2 = event.get('num2', 0)
+    
+    # Q2: Details
+    name = event.get('name', 'N/A')
+    prn = event.get('prn', 'N/A')
+    
+    print(f"Student: {name}, PRN: {prn}")
+    return {"Sum": num1 + num2}
+
+Q3, Q4, & Q8: Create, Read, and Validate
+
+Logic: Check if the PRN exists. If not, put the item.
+Python
+
+import boto3
+table = boto3.resource('dynamodb').Table('Students')
+
+def lambda_handler(event, context):
+    prn = event['prn']
+    
+    # Check if exists (Q8)
+    check = table.get_item(Key={'prn': prn})
+    if 'Item' in check:
+        return "Error: PRN already exists"
+    
+    # Insert (Q3)
+    table.put_item(Item=event)
+    return "Success: Record Inserted"
+
+Q5 & Q6: Update and Delete
+Python
+
+import boto3
+table = boto3.resource('dynamodb').Table('Students')
+
+def lambda_handler(event, context):
+    operation = event.get('op') # Pass 'update' or 'delete' in test event
+    
+    if operation == 'update':
+        table.update_item(
+            Key={'prn': event['prn']},
+            UpdateExpression="set course = :c",
+            ExpressionAttributeValues={':c': event['course']}
+        )
+        return "Updated"
+        
+    elif operation == 'delete':
+        table.delete_item(Key={'prn': event['prn']})
+        return "Deleted"
+
+Q7: Scan Table
+Python
+
+import boto3
+table = boto3.resource('dynamodb').Table('Students')
+
+def lambda_handler(event, context):
+    return table.scan()['Items']
+
+Q9 & Q10: S3 Triggers
+
+Note: Go to the "Add Trigger" button in the Lambda UI and select your S3 bucket.
+Python
+
+def lambda_handler(event, context):
+    # Extract data from the S3 event object
+    record = event['Records'][0]['s3']
+    bucket = record['bucket']['name']
+    file_name = record['object']['key']
+    file_size = record['object']['size']
+    
+    print(f"File: {file_name} | Bucket: {bucket} | Size: {file_size} bytes")
+    return "S3 Event Processed"
+
+Phase 4: Testing
+
+    Click the Test tab in the Lambda console.
+
+    Create a New Event with this JSON:
+    JSON
+
+    {
+      "prn": "101",
+      "name": "Pallavi",
+      "course": "Cyber Security",
+      "num1": 10,
+      "num2": 20
+    }
+
+    Click Save and then Test.
+
+    Check the Execution Results and the Function Logs (Monitor tab) to see your print() statements.
