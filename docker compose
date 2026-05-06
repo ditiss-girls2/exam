@@ -1,0 +1,91 @@
+Q1. Docker Compose: Nginx Static Website
+Setup Folder Structure:
+mkdir website && echo "<h1>Hello from Docker Compose</h1>" > website/index.html
+
+Create docker-compose.yml:
+
+YAML
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./website:/usr/share/nginx/html
+Run: docker-compose up -d
+
+Verify: Visit http://localhost:8080 in your browser.
+
+Q2. Docker Compose: Python Script Container
+Create app.py:
+echo 'print("Hello from Python Container")' > app.py
+
+Create Dockerfile:
+
+Dockerfile
+FROM python:3.9-slim
+COPY app.py .
+CMD ["python", "app.py"]
+Create docker-compose.yml:
+
+YAML
+services:
+  python-app:
+    build: .
+Run: docker-compose up (The container will print the message and exit).
+
+Q3. Docker Compose: MySQL with Volume
+Create docker-compose.yml:
+
+YAML
+services:
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: assignment_db
+    volumes:
+      - mysql_storage:/var/lib/mysql
+
+volumes:
+  mysql_storage:
+Run: docker-compose up -d
+
+Create Data:
+docker exec -it $(docker ps -qf "name=db") mysql -u root -ppassword -e "CREATE TABLE assignment_db.test (id INT); INSERT INTO assignment_db.test VALUES (101);"
+
+Restart and Verify:
+docker-compose restart db
+docker exec -it $(docker ps -qf "name=db") mysql -u root -ppassword -e "SELECT * FROM assignment_db.test;"
+
+Q4. One Volume with 3 Nginx Containers
+Note: Since they share the exact same volume path, the last container to write to the volume usually "wins." To ensure they show different content as requested, we use command overrides to write specific strings to the shared index file.
+
+Create docker-compose.yml:
+
+YAML
+services:
+  nginx1:
+    image: nginx:alpine
+    ports: ["8081:80"]
+    volumes: ["shared-data:/usr/share/nginx/html"]
+    command: /bin/sh -c "echo 'Hello from Container 1' > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"
+
+  nginx2:
+    image: nginx:alpine
+    ports: ["8082:80"]
+    volumes: ["shared-data:/usr/share/nginx/html"]
+    # Note: In a real shared volume, this would overwrite nginx1's file.
+    command: /bin/sh -c "echo 'Hello from Container 2' > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"
+
+  nginx3:
+    image: nginx:alpine
+    ports: ["8083:80"]
+    volumes: ["shared-data:/usr/share/nginx/html"]
+    command: /bin/sh -c "echo 'Hello from Container 3' > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"
+
+volumes:
+  shared-data:
+Run: docker-compose up -d
+
+Verify: Access ports 8081, 8082, and 8083.
