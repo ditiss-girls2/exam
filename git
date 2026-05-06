@@ -96,3 +96,95 @@ git init
     git branch -d feature
     ```
     *Optional: To update the remote GitHub repository with these merge changes, run `git push origin main`.*
+
+######################Git revert#############
+
+1. Git Revert (Step-by-Step)
+Reverting is used to undo a specific commit by creating a new "inverse" commit.
+
+Step 1: Initialize a repository and create a file
+
+Bash
+git init revert-demo
+cd revert-demo
+echo "Version 1: Initial Content" > file.txt
+git add file.txt
+git commit -m "First commit"
+Step 2: Make a "bad" change and commit it
+
+Bash
+echo "Version 2: This change is a mistake!" >> file.txt
+git add file.txt
+git commit -m "Added bad feature"
+Step 3: Identify the Commit ID to undo
+
+Bash
+git log --oneline
+(You will see a list. Note the 7-character ID next to "Added bad feature", e.g., a1b2c3d)
+
+Step 4: Execute the Revert
+
+Bash
+git revert a1b2c3d
+(A text editor will open asking for a commit message. Save and close it—usually Ctrl+X then Y then Enter in Nano, or :wq in Vim).
+
+Step 5: Verify the result
+
+Bash
+cat file.txt
+git log --oneline
+
+
+#################git conflict###################
+
+2. Git Conflict (Step-by-Step)
+A conflict happens when the same line is changed in two different branches.
+
+Step 1: Setup the repository and main branch
+
+Bash
+git init conflict-demo
+cd conflict-demo
+echo "Base Title" > index.html
+git add index.html
+git commit -m "Main title added"
+Step 2: Create a new branch and change the line
+
+Bash
+git checkout -b feature-branch
+echo "Feature Title" > index.html
+git add index.html
+git commit -m "Updated title on feature branch"
+Step 3: Switch back to main and change the SAME line
+
+Bash
+git checkout main
+echo "Main Title Update" > index.html
+git add index.html
+git commit -m "Updated title on main branch"
+Step 4: Try to merge (This triggers the conflict)
+
+Bash
+git merge feature-branch
+(Terminal will output: CONFLICT (content): Merge conflict in index.html)
+
+Step 5: Resolve the conflict manually
+Open index.html in a text editor. You will see:
+
+HTML
+<<<<<<< HEAD
+Main Title Update
+=======
+Feature Title
+>>>>>>> feature-branch
+Delete the markers (<<<<, ====, >>>>).
+
+Keep the text you want (e.g., change it to "Final Title").
+
+Step 6: Finish the merge
+
+Bash
+git add index.html
+git commit -m "Resolved merge conflict manually"
+
+
