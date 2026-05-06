@@ -1,0 +1,105 @@
+login as: ec2-user
+Authenticating with public key "my-ditiss-course"
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+[ec2-user@ip-10-0-14-52 ~]$ ls
+[ec2-user@ip-10-0-14-52 ~]$ vim key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ ls
+key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ vim key.pem
+[ec2-user@ip-10-0-14-52 ~]$ ls
+key.pem  key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ rm key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ ls
+key.pem
+[ec2-user@ip-10-0-14-52 ~]$ curl ipconfig.me
+Moved Permanently. Redirecting to https://ifconfig.me/[ec2-user@ip-10-0-14-52 ~]                                                             $ ^C
+[ec2-user@ip-10-0-14-52 ~]$ ssh ec2-user@10.0.137.153
+The authenticity of host '10.0.137.153 (10.0.137.153)' can't be established.
+ED25519 key fingerprint is SHA256:F1mazQunsTRy8wC447hN65CiD/w4xKaeZ/5i175x4dI.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.0.137.153' (ED25519) to the list of known hosts.
+ec2-user@10.0.137.153: Permission denied (publickey,gssapi-keyex,gssapi-with-mic                                                             ).
+[ec2-user@ip-10-0-14-52 ~]$ sudo ssh ec2-user@10.0.137.153
+The authenticity of host '10.0.137.153 (10.0.137.153)' can't be established.
+ED25519 key fingerprint is SHA256:F1mazQunsTRy8wC447hN65CiD/w4xKaeZ/5i175x4dI.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.0.137.153' (ED25519) to the list of known hosts.
+ec2-user@10.0.137.153: Permission denied (publickey,gssapi-keyex,gssapi-with-mic                                                             ).
+[ec2-user@ip-10-0-14-52 ~]$
+[ec2-user@ip-10-0-14-52 ~]$
+[ec2-user@ip-10-0-14-52 ~]$ ls
+[ec2-user@ip-10-0-14-52 ~]$ vim key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ ls
+key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ vim key.pem
+[ec2-user@ip-10-0-14-52 ~]$ ls
+key.pem  key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ rm key.ppk
+[ec2-user@ip-10-0-14-52 ~]$ ls
+key.pem
+[ec2-user@ip-10-0-14-52 ~]$ curl ipconfig.me
+Moved Permanently. Redirecting to https://ifconfig.me/[ec2-user@ip-10-0-14-52 ~]$ ^C
+[ec2-user@ip-10-0-14-52 ~]$ ssh ec2-user@10.0.137.153
+The authenticity of host '10.0.137.153 (10.0.137.153)' can't be established.
+ED25519 key fingerprint is SHA256:F1mazQunsTRy8wC447hN65CiD/w4xKaeZ/5i175x4dI.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.0.137.153' (ED25519) to the list of known hosts.
+ec2-user@10.0.137.153: Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+[ec2-user@ip-10-0-14-52 ~]$ sudo ssh ec2-user@10.0.137.153
+The authenticity of host '10.0.137.153 (10.0.137.153)' can't be established.
+ED25519 key fingerprint is SHA256:F1mazQunsTRy8wC447hN65CiD/w4xKaeZ/5i175x4dI.
+This key is not known by any other names
+^Cc2-user@ip-10-0-14-52 ~]$ission denied (publickey,gssapi-keyex,gssapi-with-mic).^C
+[ec2-user@ip-10-0-14-52 ~]$ ^C
+[ec2-user@ip-10-0-14-52 ~]$ chmod 400 key.pem
+[ec2-user@ip-10-0-14-52 ~]$ sudo ssh ec2-user@10.0.137.153
+ec2-user@10.0.137.153: Permission denied (publickey,gssapi-keyex,gssapi-with-mic).
+[ec2-user@ip-10-0-14-52 ~]$ ssh -i key.pem ec2-user@10.0.137.153
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+[ec2-user@ip-10-0-137-153 ~]$ ls
+[ec2-user@ip-10-0-137-153 ~]$ exit
+logout
+Connection to 10.0.137.153 closed.
+[ec2-user@ip-10-0-14-52 ~]$ echo "This is a secret file for the private server" > test_file.txt
+[ec2-user@ip-10-0-14-52 ~]$ ls
+key.pem  test_file.txt
+[ec2-user@ip-10-0-14-52 ~]$ scp -i key.pem test_file.txt ec2-user@10.0.137.153:/home/ec2-user/
+test_file.txt                                                                                              100%   45   116.2KB/s   00:00
+[ec2-user@ip-10-0-14-52 ~]$ ssh -i key.pem ec2-user@10.0.137.153
+   ,     #_
+   ~\_  ####_        Amazon Linux 2023
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+Last login: Wed May  6 04:29:36 2026 from 10.0.14.52
+[ec2-user@ip-10-0-137-153 ~]$ ls
+test_file.txt
+[ec2-user@ip-10-0-137-153 ~]$ scp -i key.pem test_file.txt ec2-user@10.0.137.153:/home/ec2-user/
+^C
+[ec2-user@ip-10-0-137-153 ~]$
