@@ -1,127 +1,25 @@
-docker swarm init
+docker service create --name rolling-nginx --replicas 3 nginx:1.25
 
-docker service create --name nginx-service --replicas 2 --publish 8080:80 nginx
-    ```
-3.  **Verify status:**
-    
-```bash
-    docker service ls
-    docker service ps nginx-service
-    ```
-4.  **Access:** Open `http://localhost:8080` in your browser.
+docker service update \
+  --image nginx:latest \
+  --update-parallelism 1 \
+  --update-delay 10s \
+  rolling-nginx
 
----
+docker service ps rolling-nginx
 
-### Q2. Docker Swarm: Python Worker Service
-1.  **Create `app.py`:**
-    
-```python
-    import time
-    while True:
-        print("Running in Swarm...")
-        time.sleep(5)
-    ```
-2.  **Create `Dockerfile`:**
-    
-```dockerfile
-    FROM python:3.9-slim
-    COPY app.py .
-    CMD ["python", "-u", "app.py"]
-    ```
-3.  **Build image:**
-    
-```bash
-    docker build -t swarm-python .
-    ```
-4.  **Deploy service:**
-    
-```bash
-    docker service create --name python-service --replicas 3 swarm-python
-    ```
-5.  **Check logs & distribution:**
-    
-```bash
-    docker service ps python-service
-    docker service logs -f python-service
-    ```
+docker service update --rollback rolling-nginx
 
----
+#########################################################
 
-### Q3. Docker Swarm: Scaling Service
-1.  **Deploy initial service:**
-    
-```bash
-    docker service create --name scale-nginx --replicas 2 nginx
-    ```
-2.  **Scale up to 5:**
-    
-```bash
-    docker service scale scale-nginx=5
-    ```
-3.  **Verify:** `docker service ls`
-4.  **Scale down to 1:**
-    
-```bash
-    docker service scale scale-nginx=1
-    ```
-    *(Observation: Docker immediately terminates 4 containers to match the desired state of 1 replica.)*
-
----
-
-### Q4. Docker Swarm: Rolling Update
-1.  **Deploy with specific version:**
-    
-```bash
-    docker service create --name update-nginx --replicas 3 nginx:1.25
-    ```
-2.  **Perform Rolling Update:**
-    
-```bash
-    docker service update --image nginx:latest --update-parallelism 1 --update-delay 10s update-nginx
-    ```
-3.  **Verify Update:** `docker service ps update-nginx`
-4.  **Rollback (if needed):**
-    
-```bash
-    docker service update --rollback update-nginx
-    ```
-
----
-
-### Q5. Remove Service and Leave Swarm
-1.  **List services:** `docker service ls`
-2.  **Remove services:**
-    ```bash
-    docker service rm nginx-service python-service scale-nginx update-nginx
-    ```
-3.  **Leave Swarm:**
-    ```bash
-    docker swarm leave --force
-    ```
-
----
-
-### Q6. Usage of Docker Swarm
-
-*   **Container Orchestration:** Manages the lifecycle of containers across a cluster of machines.
-*   **Service Deployment:** Allows you to define a "service" (e.g., Nginx) and let the swarm handle the underlying containers.
-*   **Scaling:** Easily increase or decrease the number of container replicas with one command.
-*   **Load Balancing:** Swarm includes an internal load balancer that distributes requests to all healthy containers in a service.
-*   **Rolling Updates:** Updates images incrementally to ensure zero downtime.
-*   **High Availability:** If a node fails, Swarm automatically restarts the affected containers on healthy nodes.
-*   **Multi-node Management:** Turns a group of Linux hosts into a single, virtual Docker engine.
-
----
-
-### Q7. Limitations of Docker Swarm
-*   **Less Powerful:** Lacks the advanced scheduling and self-healing features of Kubernetes (K8s).
-*   **Smaller Ecosystem:** Fewer third-party tools, plugins, and community integrations compared to K8s.
-*   **Limited Auto-scaling:** Does not natively scale based on CPU/RAM usage as easily as Kubernetes.
-*   **Networking:** While simple, it lacks complex networking policies and fine-grained traffic control.
-*   **Storage Management:** Volume management across multiple nodes can be difficult without external drivers.
-*   **Production Use:** While great for small to mid-sized apps, large enterprises almost exclusively use Kubernetes for massive scale.
-
-### Exam Revision Tip:
-Remember that **Services** are the heart of Swarm. You don't use `docker run` in Swarm mode; you use `docker service create`.
-
-How is your preparation for the exam going otherwise—any specific areas like Jenkins or Ansible you want to dive into?
+docker service logs <service_name>
+docker service create --name <name> <image>
+docker service ls
+docker service ps <service_name>
+docker service inspect <service_name>
+docker service logs <service_name>
+docker service scale <service_name>=<number>
+docker service update --image <new_image> <service_name>
+docker service update --publish-add <port>:<port> <service_name>
+docker service rollback <service_name>
+docker service rm <service_name>
